@@ -1,0 +1,33 @@
+Source: mpdcron
+Section: sound
+Priority: optional
+Maintainer: Sebastien Delafond <seb@debian.org>
+Build-Depends: lintian, debhelper (>= 7.0.50~), libmpdclient-dev (>= 2.1), libdaemon-dev, libglib2.0-dev, libcurl4-gnutls-dev, libsqlite3-dev, libnotify-bin, quilt, automake, libtool
+Standards-Version: 3.9.0
+Homepage: http://alip.github.com/mpdcron
+
+Package: mpdcron
+Architecture: any
+Depends: libnotify-bin, ruby, libnokogiri-ruby, ${shlibs:Depends}, ${misc:Depends}
+Suggests: mpd
+Description: add scrobbler, rating, play counts and other functionalities to MPD
+ mpdcron is a daemon that watches a Music Player Daemon instance for idle
+ states and execs commands triggered by specific states.
+ .
+  * Uses mpd's idle mode.
+  * Calls hooks depending on the event.
+  * Sets special environment variables to pass data to the hooks.
+  * Optional support for modules via GModule.                                                                   
+  * Included modules:
+    - notification
+      + uses notify-send to send notifications.
+      + can detect repeated songs.
+    - scrobbler
+      + uses curl to submit songs to Last.fm or Libre.fm
+    - stats
+      + module saves song data to a sqlite database
+      + supports loving, killing, rating and tagging songs, artists,
+        albums and genres.
+      + tracks play count of songs, artist, albums and genres.
+      + implements a simple server protocol for remote clients to
+        receive data.

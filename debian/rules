@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+%:
+	dh --with=quilt $@
+
+override_dh_auto_clean:
+	dh_auto_clean
+	# nasty...
+	rm -f config.guess config.h.in config.sub configure \
+	      data/Makefile.in depcomp install-sh ltmain.sh \
+	      m4/libtool.m4 m4/ltoptions.m4 m4/ltsugar.m4 \
+	      m4/ltversion.m4 m4/lt~obsolete.m4 missing \
+	      src/Makefile.in src/gmodule/Makefile.in \
+	      src/gmodule/notification/Makefile.in \
+	      src/gmodule/scrobbler/Makefile.in \
+	      src/gmodule/stats/Makefile.in \
+	      zsh-completion/Makefile.in 
+
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure -- --with-standard-modules=all --enable-gmodule --prefix=/usr

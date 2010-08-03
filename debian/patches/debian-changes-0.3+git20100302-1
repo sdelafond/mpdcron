@@ -1,0 +1,47 @@
+Description: Upstream changes introduced in version 0.3+git20100302-1
+ This patch has been created by dpkg-source during the package build.
+ Here's the last changelog entry, hopefully it gives details on why
+ those changes were made:
+ .
+ mpdcron (0.3+git20100302-1) unstable; urgency=low
+ .
+     * Initial release (Closes: #572263).
+ .
+ The person named in the Author field signed this changelog entry.
+Author: Sebastien Delafond <seb@debian.org>
+Bug-Debian: http://bugs.debian.org/572263
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- mpdcron-0.3+git20100302.orig/Makefile.in
++++ mpdcron-0.3+git20100302/Makefile.in
+@@ -37,8 +37,8 @@ host_triplet = @host@
+ subdir = .
+ DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
+ 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+-	$(top_srcdir)/configure COPYING compile config.guess \
+-	config.sub depcomp install-sh ltmain.sh missing mkinstalldirs
++	$(top_srcdir)/configure COPYING config.guess config.sub \
++	depcomp install-sh ltmain.sh missing
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_compiler_flags.m4 \
+ 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+@@ -48,7 +48,7 @@ am__configure_deps = $(am__aclocal_m4_de
+ 	$(ACLOCAL_M4)
+ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
+  configure.lineno config.status.lineno
+-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
++mkinstalldirs = $(install_sh) -d
+ CONFIG_HEADER = config.h
+ CONFIG_CLEAN_FILES =
+ CONFIG_CLEAN_VPATH_FILES =
