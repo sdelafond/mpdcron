@@ -1,3 +1,10 @@
+mpdcron (0.3+git20110303-1~1.gbpb20775) UNRELEASED; urgency=low
+
+  * removed extraneous patch. document new upstream origin for this release.
+  * Add Vcs-* info. Bump up Standards-Version.
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 03 Mar 2011 18:50:13 +0100
+
 mpdcron (0.3+git20100803-1) unstable; urgency=low
 
   * New upstream release (Closes: #573805).
