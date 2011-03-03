@@ -3,8 +3,10 @@ Section: sound
 Priority: optional
 Maintainer: Sebastien Delafond <seb@debian.org>
 Build-Depends: lintian, debhelper (>= 7.0.50~), libmpdclient-dev (>= 2.1), libdaemon-dev, libglib2.0-dev, libcurl4-gnutls-dev, libsqlite3-dev, libnotify-bin, quilt, automake, libtool
-Standards-Version: 3.9.0
+Standards-Version: 3.9.1
 Homepage: http://alip.github.com/mpdcron
+Vcs-Git: git://github.com/sdelafond/mpdcron.git
+Vcs-Browser: https://github.com/sdelafond/mpdcron
 
 Package: mpdcron
 Architecture: any
