@@ -1,0 +1,25 @@
+## News for mpdcron
+
+This file lists the major changes between versions. For a more detailed list of
+every change, see git log.
+
+* Be more conservative when exporting variables to the environment (fixes: #3)
+* stats: ability to set rating regardless of existing rating.
+
+### 0.3
+* Added stats module to keep statistics of played songs in a sqlite database
+* Added notification module to send notifications via notify-send
+* Added scrobbler module to submit songs to Last.fm or Libre.fm
+* Added module support through GModule
+* Added initial manpage
+* Changed name to mpdcron
+
+### 0.2
+* Initial public release
+* Require Mpd's idle mode
+* Port to libmpdclient-2, mpdhooker now requires libmpdclient-2.1 or newer.
+
+### 0.1
+* Unreleased first version
+
+<!-- vim: set tw=80 ft=mkd spell spelllang=en sw=4 sts=4 et : -->
