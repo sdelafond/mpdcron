@@ -1,3 +1,9 @@
+mpdcron (0.3+git20110303-2) unstable; urgency=low
+
+  * Remove .la files (Closes: #622429)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 14 Apr 2011 18:39:51 +0200
+
 mpdcron (0.3+git20110303-1) unstable; urgency=low
 
   * New upstream version (Closes: #615066).

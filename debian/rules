@@ -16,6 +16,9 @@ override_dh_auto_clean:
 	      src/gmodule/stats/Makefile.in \
 	      zsh-completion/Makefile.in 
 
+override_dh_install:
+	rm -rf $(CURDIR)/debian/mpdcron/usr/lib/mpdcron-0.3/modules/*.la
+
 override_dh_auto_configure:
 	./autogen.sh
 	dh_auto_configure -- --with-standard-modules=all --enable-gmodule --prefix=/usr
