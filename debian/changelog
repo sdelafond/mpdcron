@@ -1,0 +1,41 @@
+mpdcron (0.3+git20110303-4) unstable; urgency=low
+
+  * Fix missing dependency (Closes: #707791)
+
+ -- Sebastien Delafond <seb@debian.org>  Mon, 13 May 2013 17:09:30 +0200
+
+mpdcron (0.3+git20110303-3) unstable; urgency=low
+
+  * Bumped-up Standards-Version
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 05 Oct 2011 11:08:42 +0200
+
+mpdcron (0.3+git20110303-2) unstable; urgency=low
+
+  * Remove .la files (Closes: #622429)
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 14 Apr 2011 18:39:51 +0200
+
+mpdcron (0.3+git20110303-1) unstable; urgency=low
+
+  * New upstream version (Closes: #615066).
+  * Removed extraneous patch.
+  * Document new upstream origin for this release.
+  * Add Vcs-* info.
+  * Bump up Standards-Version.
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 03 Mar 2011 19:02:14 +0100
+
+mpdcron (0.3+git20100803-1) unstable; urgency=low
+
+  * New upstream release (Closes: #573805).
+  * Build against libcurl4-gnutls-dev (Closes: #588230).
+  * Bumped up Standards-Version.
+
+ -- Sebastien Delafond <seb@debian.org>  Tue, 03 Aug 2010 20:22:18 +0200
+
+mpdcron (0.3+git20100302-1) unstable; urgency=low
+
+    * Initial release (Closes: #572263).
+  
+ -- Sebastien Delafond <seb@debian.org>  Tue, 02 Mar 2010 20:07:00 +0100

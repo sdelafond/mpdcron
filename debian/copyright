@@ -1,0 +1,31 @@
+This package was originally debianized for Ubuntu by Taylor
+LeMasurier-Wren <ripps818@gmail.com> on Mon, 14 Dec 2009 10:38:16
+-0600, and subsequently adapted for Debian by Sebastien Delafond
+<seb@debian.org> on Wed, 03 Mar 2010 13:10:52 +0100.
+
+It was downloaded from: http://alip.github.com/mpdcron/
+http://repo.or.cz/w/mpdcron.git
+
+Upstream Author: Ali Polatel <alip@exherbo.org>
+
+All files are Copyright (c) 2009, 2010 Ali Polatel <alip@exherbo.org>,
+except for the following:
+
+   either Copyright (c) 2005-2008 Kuno Woudt <kuno@frob.nl> or
+   Copyright (C) 2003-2009 The Music Player Daemon Project:
+    src/gmodule/scrobbler/*
+    src/gmodule/utils.h
+    src/gmodule/notification/notification-file.c 
+    src/gmodule/stats/tokenizer.c
+    src/gmodule/stats/stats-command.c
+    src/gmodule/stats/eugene-connection.c,
+    src/gmodule/stats/stats-module.c
+    src/gmodule/stats/tokenizer.h
+ 
+  Copyright (c) John Nunemaker:
+    conf/hooks/submit.rb
+
+
+mpdcron is released under the GPL-2. On Debian systems, the complete
+text of the GNU General Public License v2 can be found in the file
+'/usr/share/common-licenses/GPL-2'.
