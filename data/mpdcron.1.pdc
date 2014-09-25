@@ -1,0 +1,52 @@
+% mpdcron(1) manual
+% Ali Polatel <alip@exherbo.org>
+% December 23, 2009
+
+# NAME
+mpdcron - cron like daemon for mpd
+
+# SYNOPSIS
+mpdcron [*option*]
+
+# DESCRIPTION
+mpdcron is a cron like daemon for mpd. It connects to mpd, waits for idle events.
+It has two interfaces:
+
+- Hooks which are executed after setting environment variables which hooks can use to get more
+  information about the event without having to connect to mpd.
+- Modules, which are dynamically loaded and have direct access to mpd connection and the file
+  descriptor of mpdcron's configuration file.
+
+By default it will get the host name and port for mpd from **MPD\_HOST** and **MPD\_PORT**
+environment variables. **MPD\_PASSWORD** environment variable can be set to make mpdcron connect to
+a password-protected mpd.  If these environment variables aren't set, mpdcron connects to localhost
+on port 6600.
+
+# OPTIONS
+-?, \--help
+:   Show help options and exit.
+
+-V, \--version
+:   Print version information and exit.
+
+-k, \--kill
+:   Instead of launching the daemon, attempt to kill the already running daemon.
+
+-n, \--no-daemon
+:   Don't detach from console. This option can be used for debugging.
+
+# FILES
+- **~/.mpdcron/mpdcron.conf** User configuration file
+
+# SEE ALSO
+- `mpd`(1)
+- <http://alip.github.com/mpdcron/>
+
+# REPORTING BUGS
+If you find a bug, please report it at <http://github.com/alip/mpdcron/issues>
+
+# COPYRIGHT
+Copyright (c) 2009 Ali Polatel <alip@exherbo.org>\
+Free use of this software is granted under the terms of the GNU General Public License (GPL).
+
+<!-- vim: set tw=100 ft=pdc spell spelllang=en sw=4 sts=4 et : -->

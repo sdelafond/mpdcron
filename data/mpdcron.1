@@ -1,0 +1,72 @@
+.TH mpdcron 1 "December 23, 2009" "manual"
+.SH NAME
+.PP
+mpdcron - cron like daemon for mpd
+.SH SYNOPSIS
+.PP
+mpdcron [\f[I]option\f[]]
+.SH DESCRIPTION
+.PP
+mpdcron is a cron like daemon for mpd.
+It connects to mpd, waits for idle events.
+It has two interfaces:
+.IP \[bu] 2
+Hooks which are executed after setting environment variables which
+hooks can use to get more information about the event without
+having to connect to mpd.
+.IP \[bu] 2
+Modules, which are dynamically loaded and have direct access to mpd
+connection and the file descriptor of mpdcron's configuration file.
+.PP
+By default it will get the host name and port for mpd from
+\f[B]MPD_HOST\f[] and \f[B]MPD_PORT\f[] environment variables.
+\f[B]MPD_PASSWORD\f[] environment variable can be set to make
+mpdcron connect to a password-protected mpd.
+If these environment variables aren't set, mpdcron connects to
+localhost on port 6600.
+.SH OPTIONS
+.TP
+.B -?, --help
+Show help options and exit.
+.RS
+.RE
+.TP
+.B -V, --version
+Print version information and exit.
+.RS
+.RE
+.TP
+.B -k, --kill
+Instead of launching the daemon, attempt to kill the already
+running daemon.
+.RS
+.RE
+.TP
+.B -n, --no-daemon
+Don't detach from console.
+This option can be used for debugging.
+.RS
+.RE
+.SH FILES
+.IP \[bu] 2
+\f[B]~/.mpdcron/mpdcron.conf\f[] User configuration file
+.SH SEE ALSO
+.IP \[bu] 2
+\f[B]mpd\f[](1)
+.IP \[bu] 2
+<http://alip.github.com/mpdcron/>
+.SH REPORTING BUGS
+.PP
+If you find a bug, please report it at
+<http://github.com/alip/mpdcron/issues>
+.SH COPYRIGHT
+.PP
+Copyright (c) 2009 Ali Polatel <alip@exherbo.org>
+.PD 0
+.P
+.PD
+Free
+use of this software is granted under the terms of the GNU General
+Public License (GPL).
+.SH AUTHOR
+Ali Polatel <alip@exherbo.org>
