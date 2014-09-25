@@ -1,3 +1,9 @@
+mpdcron (0.3+git20110303-6) unstable; urgency=medium
+
+  * Move git repository to collab-maint
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 25 Sep 2014 14:07:39 +0200
+
 mpdcron (0.3+git20110303-5) unstable; urgency=medium
 
   * Bump-up Standards-Version
