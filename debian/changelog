@@ -1,3 +1,10 @@
+mpdcron (0.3+git20110303-5) unstable; urgency=medium
+
+  * Bump-up Standards-Version
+  * Move to debian/compat 9
+
+ -- Sebastien Delafond <seb@debian.org>  Thu, 25 Sep 2014 13:53:52 +0200
+
 mpdcron (0.3+git20110303-4) unstable; urgency=low
 
   * Fix missing dependency (Closes: #707791)
