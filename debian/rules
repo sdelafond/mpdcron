@@ -14,7 +14,7 @@ override_dh_auto_clean:
 	      src/gmodule/notification/Makefile.in \
 	      src/gmodule/scrobbler/Makefile.in \
 	      src/gmodule/stats/Makefile.in \
-	      zsh-completion/Makefile.in 
+	      zsh-completion/Makefile.in
 
 override_dh_install:
 	find $(CURDIR)/debian/mpdcron/ -name *.la -exec rm {} \;

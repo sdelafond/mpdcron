@@ -19,7 +19,7 @@ Description: add scrobbler, rating, play counts and other functionalities to MPD
   * Uses mpd's idle mode.
   * Calls hooks depending on the event.
   * Sets special environment variables to pass data to the hooks.
-  * Optional support for modules via GModule.                                                                   
+  * Optional support for modules via GModule.
   * Included modules:
     - notification
       + uses notify-send to send notifications.
