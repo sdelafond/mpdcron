@@ -1,31 +1,30 @@
-This package was originally debianized for Ubuntu by Taylor
-LeMasurier-Wren <ripps818@gmail.com> on Mon, 14 Dec 2009 10:38:16
--0600, and subsequently adapted for Debian by Sebastien Delafond
-<seb@debian.org> on Wed, 03 Mar 2010 13:10:52 +0100.
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: mpdcron
+Source: https://github.com/alip/mpdcron
 
-It was downloaded from: http://alip.github.com/mpdcron/
-http://repo.or.cz/w/mpdcron.git
+Files: *
+Copyright: 2009, 2010 Ali Polatel <alip@exherbo.org>
+License: GPL-2
 
-Upstream Author: Ali Polatel <alip@exherbo.org>
+Files: src/gmodule/scrobbler/*
+ src/gmodule/utils.h
+ src/gmodule/notification/notification-file.c 
+ src/gmodule/stats/tokenizer.c
+ src/gmodule/stats/stats-command.c
+ src/gmodule/stats/eugene-connection.c
+ src/gmodule/stats/stats-module.c
+ src/gmodule/stats/tokenizer.h
+Copyright: 2005-2008 Kuno Woudt <kuno@frob.nl>
+ 2003-2009 The Music Player Daemon Project
+License: GPL-2
 
-All files are Copyright (c) 2009, 2010 Ali Polatel <alip@exherbo.org>,
-except for the following:
+Files: conf/hooks/submit.rb
+Copyright: John Nunemaker
+License: GPL-2
 
-   either Copyright (c) 2005-2008 Kuno Woudt <kuno@frob.nl> or
-   Copyright (C) 2003-2009 The Music Player Daemon Project:
-    src/gmodule/scrobbler/*
-    src/gmodule/utils.h
-    src/gmodule/notification/notification-file.c 
-    src/gmodule/stats/tokenizer.c
-    src/gmodule/stats/stats-command.c
-    src/gmodule/stats/eugene-connection.c,
-    src/gmodule/stats/stats-module.c
-    src/gmodule/stats/tokenizer.h
- 
-  Copyright (c) John Nunemaker:
-    conf/hooks/submit.rb
+Files: debian/*
+Copyright: Sebastien Delafond <seb@debian.org>
+License: GPL-2
 
-
-mpdcron is released under the GPL-2. On Debian systems, the complete
-text of the GNU General Public License v2 can be found in the file
-'/usr/share/common-licenses/GPL-2'.
+License: GPL-2
+ See /usr/share/common-licenses/GPL-2
