@@ -1,7 +1,7 @@
 /* vim: set cino= fo=croql sw=8 ts=8 sts=0 noet cin fdm=syntax : */
 
 /*
- * Copyright (c) 2009, 2010 Ali Polatel <alip@exherbo.org>
+ * Copyright (c) 2009, 2010, 2013 Ali Polatel <alip@exherbo.org>
  * Based in part upon mpdscribble which is:
  *   Copyright (C) 2008-2009 The Music Player Daemon Project
  *
@@ -33,8 +33,8 @@ enum {
 };
 
 struct http_request {
-	http_client_callback_t *callback;
-	void *callback_data;
+	const struct http_client_handler *handler;
+	void *handler_ctx;
 
 	/** the CURL easy handle */
 	CURL *curl;
@@ -65,7 +65,27 @@ static struct {
 
 	/** a linked list of all active HTTP requests */
 	GSList *requests;
+
+	/**
+	 * Set when inside http_multi_info_read(), to prevent
+	 * recursive invocation.
+	 */
+	bool locked;
+
+#if LIBCURL_VERSION_NUM >= 0x070f04
+	/**
+	 * Did CURL give us a timeout?  If yes, then we need to call
+	 * curl_multi_perform(), even if there was no event on any
+	 * file descriptor.
+	 */
+	bool timeout;
+#endif
 } http_client;
+
+static inline GQuark curl_quark(void)
+{
+	return g_quark_from_static_string("curl");
+}
 
 /**
  * Frees all resources of a #http_request object.  Also unregisters
@@ -115,22 +135,21 @@ static void
 http_client_update_fds(void)
 {
 	fd_set rfds, wfds, efds;
-	int max_fd;
-	CURLMcode mcode;
-	GSList *fds;
 
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
 	FD_ZERO(&efds);
 
-	mcode = curl_multi_fdset(http_client.multi, &rfds, &wfds, &efds, &max_fd);
+	int max_fd;
+	CURLMcode mcode = curl_multi_fdset(http_client.multi, &rfds, &wfds,
+					   &efds, &max_fd);
 	if (mcode != CURLM_OK) {
 		g_warning("curl_multi_fdset() failed: %s\n",
 				curl_multi_strerror(mcode));
 		return;
 	}
 
-	fds = http_client.fds;
+	GSList *fds = http_client.fds;
 	http_client.fds = NULL;
 
 	while (fds != NULL) {
@@ -172,27 +191,29 @@ http_client_update_fds(void)
 
 /**
  * Aborts and frees a running HTTP request and report an error to its
- * callback.
+ * handler.
  */
-static void http_request_abort(struct http_request *request)
+static void http_request_abort(struct http_request *request, GError *error)
 {
 	http_client.requests = g_slist_remove(http_client.requests, request);
 
-	request->callback(0, NULL, request->callback_data);
+	request->handler->error(error, request->handler_ctx);
 	http_request_free(request);
 }
 
 /**
- * Abort and free all HTTP requests, but don't invoke their callback
- * functions.
+ * Abort and free all HTTP requests, but don't invoke their handler
+ * methods.
  */
 static void
-http_client_abort_all_requests(void)
+http_client_abort_all_requests(GError *error)
 {
 	while (http_client.requests != NULL) {
 		struct http_request *request = http_client.requests->data;
-		http_request_abort(request);
+		http_request_abort(request, g_error_copy(error));
 	}
+
+	g_error_free(error);
 }
 
 /**
@@ -214,14 +235,31 @@ http_client_find_request(CURL *curl)
 /**
  * A HTTP request is finished: invoke its callback and free it.
  */
-static void http_request_done(struct http_request *request, CURLcode result)
+static void http_request_done(struct http_request *request, CURLcode result, long status)
 {
-	/* invoke the callback function */
-	if (result == CURLE_OK)
-		request->callback(request->body->len, request->body->str, request->callback_data);
-	else {
-		g_warning("curl failed: %s", request->error);
-		request->callback(0, NULL, request->callback_data);
+	/* invoke the handler method */
+	if (result == CURLE_WRITE_ERROR &&
+	    /* handle the postponed error that was caught in
+	       http_request_writefunction() */
+	    request->body->len > MAX_RESPONSE_BODY) {
+		GError *error =
+			g_error_new_literal(curl_quark(), 0,
+					    "response body is too large");
+		request->handler->error(error, request->handler_ctx);
+	} else if (result != CURLE_OK) {
+		GError *error = g_error_new(curl_quark(), result,
+					    "curl failed: %s",
+					    request->error);
+		request->handler->error(error, request->handler_ctx);
+	} else if (status < 200 || status >= 300) {
+		GError *error = g_error_new(curl_quark(), 0,
+					    "got HTTP status %ld",
+					    status);
+		request->handler->error(error, request->handler_ctx);
+	} else {
+		request->handler->response(request->body->len,
+					   request->body->str,
+					   request->handler_ctx);
 	}
 
 	/* remove it from the list and free resources */
@@ -238,15 +276,24 @@ http_multi_info_read(void)
 	CURLMsg *msg;
 	int msgs_in_queue;
 
+	assert(!http_client.locked);
+	http_client.locked = true;
+
 	while ((msg = curl_multi_info_read(http_client.multi, &msgs_in_queue)) != NULL) {
 		if (msg->msg == CURLMSG_DONE) {
 			struct http_request *request =
 				http_client_find_request(msg->easy_handle);
 			assert(request != NULL);
 
-			http_request_done(request, msg->data.result);
+			long status = 0;
+			curl_easy_getinfo(msg->easy_handle,
+					  CURLINFO_RESPONSE_CODE, &status);
+
+			http_request_done(request, msg->data.result, status);
 		}
 	}
+
+	http_client.locked = false;
 }
 
 /**
@@ -255,17 +302,18 @@ http_multi_info_read(void)
 static bool http_multi_perform(void)
 {
 	CURLMcode mcode;
-	int running_handles;
 
 	do {
+		int running_handles;
 		mcode = curl_multi_perform(http_client.multi,
 					   &running_handles);
 	} while (mcode == CURLM_CALL_MULTI_PERFORM);
 
 	if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
-		g_warning("curl_multi_perform() failed: %s\n",
-				curl_multi_strerror(mcode));
-		http_client_abort_all_requests();
+		GError *error = g_error_new(curl_quark(), mcode,
+					    "curl_multi_perform() failed: %s",
+					    curl_multi_strerror(mcode));
+		http_client_abort_all_requests(error);
 		return false;
 	}
 
@@ -280,6 +328,27 @@ curl_source_prepare(G_GNUC_UNUSED GSource *source, G_GNUC_UNUSED gint *timeout_)
 {
 	http_client_update_fds();
 
+#if LIBCURL_VERSION_NUM >= 0x070f04
+	http_client.timeout = false;
+
+	long timeout2;
+	CURLMcode mcode = curl_multi_timeout(http_client.multi, &timeout2);
+	if (mcode == CURLM_OK) {
+		if (timeout2 >= 0 && timeout2 < 10)
+			/* CURL 7.21.1 likes to report "timeout=0",
+			   which means we're running in a busy loop.
+			   Quite a bad idea to waste so much CPU.
+			   Let's use a lower limit of 10ms. */
+			timeout2 = 10;
+
+		*timeout_ = timeout2;
+
+		http_client.timeout = timeout2 >= 0;
+	} else
+		g_warning("curl_multi_timeout() failed: %s\n",
+			  curl_multi_strerror(mcode));
+#endif
+
 	return FALSE;
 }
 
@@ -288,6 +357,16 @@ curl_source_prepare(G_GNUC_UNUSED GSource *source, G_GNUC_UNUSED gint *timeout_)
  */
 static gboolean curl_source_check(G_GNUC_UNUSED GSource *source)
 {
+#if LIBCURL_VERSION_NUM >= 0x070f04
+	if (http_client.timeout) {
+		/* when a timeout has expired, we need to call
+		   curl_multi_perform(), even if there was no file
+		   descriptor event. */
+		http_client.timeout = false;
+		return TRUE;
+	}
+#endif
+
 	for (GSList *i = http_client.fds; i != NULL; i = i->next) {
 		GPollFD *poll_fd = i->data;
 		if (poll_fd->revents != 0)
@@ -390,37 +469,37 @@ static size_t http_request_writefunction(void *ptr, size_t size, size_t nmemb, v
 	g_string_append_len(request->body, ptr, size * nmemb);
 
 	if (request->body->len > MAX_RESPONSE_BODY)
-		/* response body too large */
-		http_request_abort(request);
+		return 0;
 
 	return size * nmemb;
 }
 
 void http_client_request(const char *url, const char *post_data,
-		http_client_callback_t *callback, void *data)
+			 const struct http_client_handler *handler, void *ctx)
 {
 	struct http_request *request = g_new(struct http_request, 1);
-	CURLcode code;
-	CURLMcode mcode;
-	bool success;
 
-	request->callback = callback;
-	request->callback_data = data;
+	request->handler = handler;
+	request->handler_ctx = ctx;
 
 	/* create a CURL request */
 
 	request->curl = curl_easy_init();
 	if (request->curl == NULL) {
 		g_free(request);
-		callback(0, NULL, data);
+		GError *error = g_error_new_literal(curl_quark(), 0,
+						    "curl_easy_init() failed");
+		handler->error(error, ctx);
 		return;
 	}
 
-	mcode = curl_multi_add_handle(http_client.multi, request->curl);
+	CURLMcode mcode = curl_multi_add_handle(http_client.multi, request->curl);
 	if (mcode != CURLM_OK) {
 		curl_easy_cleanup(request->curl);
 		g_free(request);
-		callback(0, NULL, data);
+		GError *error = g_error_new_literal(curl_quark(), 0,
+						    "curl_multi_add_handle() failed");
+		handler->error(error, ctx);
 		return;
 	}
 
@@ -441,12 +520,14 @@ void http_client_request(const char *url, const char *post_data,
 		curl_easy_setopt(request->curl, CURLOPT_POSTFIELDS, request->post_data);
 	}
 
-	code = curl_easy_setopt(request->curl, CURLOPT_URL, url);
+	CURLcode code = curl_easy_setopt(request->curl, CURLOPT_URL, url);
 	if (code != CURLE_OK) {
 		curl_multi_remove_handle(http_client.multi, request->curl);
 		curl_easy_cleanup(request->curl);
 		g_free(request);
-		callback(0, NULL, data);
+		GError *error = g_error_new_literal(curl_quark(), code,
+						    "curl_easy_setopt() failed");
+		handler->error(error, ctx);
 		return;
 	}
 
@@ -456,13 +537,15 @@ void http_client_request(const char *url, const char *post_data,
 
 	/* initiate the transfer */
 
-	success = http_multi_perform();
-	if (!success) {
+	if (!http_multi_perform()) {
 		http_client.requests = g_slist_remove(http_client.requests, request);
 		http_request_free(request);
-		callback(0, NULL, data);
+		GError *error = g_error_new_literal(curl_quark(), code,
+						    "http_multi_perform() failed");
+		handler->error(error, ctx);
 		return;
 	}
 
-	http_multi_info_read();
+	if (!http_client.locked)
+		http_multi_info_read();
 }

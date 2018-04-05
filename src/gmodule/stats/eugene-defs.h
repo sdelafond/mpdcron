@@ -24,6 +24,7 @@
 
 #include <stdbool.h>
 #include <syslog.h>
+#include <time.h>
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -74,6 +75,8 @@ struct mpdcron_song {
 	int love;
 	int kill;
 	int rating;
+	int karma;
+	time_t last_played;
 	GSList *tags;
 };
 
@@ -236,26 +239,6 @@ mpdcron_rate_absolute_expr(struct mpdcron_connection *conn,
 		int *changes);
 
 bool
-mpdcron_count_absolute_album_expr(struct mpdcron_connection *conn,
-		const char *rating, const char *expr,
-		int *changes);
-
-bool
-mpdcron_count_absolute_artist_expr(struct mpdcron_connection *conn,
-		const char *rating, const char *expr,
-		int *changes);
-
-bool
-mpdcron_count_absolute_genre_expr(struct mpdcron_connection *conn,
-		const char *rating, const char *expr,
-		int *changes);
-
-bool
-mpdcron_count_absolute_expr(struct mpdcron_connection *conn,
-		const char *rating, const char *expr,
-		int *changes);
-
-bool
 mpdcron_addtag_expr(struct mpdcron_connection *conn, const char *expr,
 		const char *tag, int *changes);
 
@@ -319,6 +302,10 @@ bool
 mpdcron_count_expr(struct mpdcron_connection *conn, const char *expr,
 		const char *count, int *changes);
 
+bool
+mpdcron_karma_expr(struct mpdcron_connection *conn, const char *expr,
+		const char *karma, int *changes);
+
 char *
 quote(const char *src);
 
@@ -344,9 +331,6 @@ int
 cmd_rate_absolute(int argc, char **argv);
 
 int
-cmd_count_absolute(int argc, char **argv);
-
-int
 cmd_list(int argc, char **argv);
 
 int
@@ -363,6 +347,9 @@ cmd_listtags(int argc, char **argv);
 
 int
 cmd_count(int argc, char **argv);
+
+int
+cmd_karma(int argc, char **argv);
 
 void
 eulog(int level, const char *fmt, ...);
