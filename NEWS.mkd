@@ -3,7 +3,25 @@
 This file lists the major changes between versions. For a more detailed list of
 every change, see git log.
 
-* stats: ability to set count regardless of existing count.
+* stats: clever handling for radio stations
+* scrobbler: clever handling for radio stations
+* scrobbler: (curl) fix operation with threaded resolver
+  (fixes: #16)
+* scrobbler: (curl) fix segmentation fault with large response body
+* Require libmpdclient-2.2
+* file: ignore trailing whitespace
+* scrobbler: check the HTTP response status
+* scrobbler: better HTTP error messages
+* scrobbler: fix memory leak in as_songchange()
+* log: use ISO8601 date format
+* scrobbler: submit track numbers
+* scrobbler: (journal) don't save "(null)" values
+* scrobbler: (curl) prevent recursive read calls
+* scrobbler: (curl) Implement libCURL timeouts
+* stats: Add an automatic "karma" rating of songs, based on how often they are
+  skipped or fully listened to (fixes: #13).
+* stats: Add a database column when a song was last played or skipped
+  (fixes: #13).
 * Be more conservative when exporting variables to the environment (fixes: #3)
 * stats: ability to set rating regardless of existing rating.
 

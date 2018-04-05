@@ -1,7 +1,7 @@
 /* vim: set cino= fo=croql sw=8 ts=8 sts=0 noet cin fdm=syntax : */
 
 /*
- * Copyright (c) 2009, 2010 Ali Polatel <alip@exherbo.org>
+ * Copyright (c) 2009, 2010, 2016 Ali Polatel <alip@exherbo.org>
  * Based in part upon mpdscribble which is:
  *   Copyright (C) 2008-2009 The Music Player Daemon Project
  *   Copyright (C) 2005-2008 Kuno Woudt <kuno@frob.nl>
@@ -29,6 +29,7 @@
 
 static unsigned last_id = -1;
 static bool was_paused = 0;
+static bool is_remote = 0;
 static struct mpd_song *prev = NULL;
 static GTimer *timer = NULL;
 
@@ -41,9 +42,16 @@ played_long_enough(int elapsed, int length)
 static void
 song_changed(const struct mpd_song *song)
 {
+	const char *uri;
+
 	g_assert(song != NULL);
 
 	g_timer_start(timer);
+
+	uri = mpd_song_get_uri(song);
+	is_remote = !!strstr(uri, "://");
+	if (is_remote)
+		g_message("New song detected with URL (%s)", uri);
 
 	g_debug("New song detected (%s - %s), id: %u, pos: %u",
 			mpd_song_get_tag(song, MPD_TAG_ARTIST, 0),
@@ -60,20 +68,19 @@ song_started(const struct mpd_song *song)
 static void
 song_ended(const struct mpd_song *song)
 {
-	int elapsed;
+	bool long_enough;
+	int elapsed, song_duration, percent_played;
 	GError *error;
 
 	g_assert(song != NULL);
 
 	elapsed = g_timer_elapsed(timer, NULL);
-
-	if (!played_long_enough(elapsed, mpd_song_get_duration(song))) {
-		g_debug("Song (%s - %s), id: %u, pos: %u not played long enough, skipping",
-				mpd_song_get_tag(song, MPD_TAG_ARTIST, 0),
-				mpd_song_get_tag(song, MPD_TAG_TITLE, 0),
-				mpd_song_get_id(song), mpd_song_get_pos(song));
-		return;
-	}
+	song_duration = mpd_song_get_duration(song);
+	long_enough = played_long_enough(elapsed, song_duration);
+	if (song_duration > 0)
+		percent_played = elapsed * 100 / song_duration;
+	else
+		percent_played = 100;
 
 	g_debug("Saving old song (%s - %s), id: %u, pos: %u",
 			mpd_song_get_tag(song, MPD_TAG_ARTIST, 0),
@@ -81,7 +88,7 @@ song_ended(const struct mpd_song *song)
 			mpd_song_get_id(song), mpd_song_get_pos(song));
 
 	error = NULL;
-	if (!db_process(song, true, &error)) {
+	if (!db_process(song, long_enough, percent_played, &error)) {
 		g_warning("Saving old song failed: %s", error->message);
 		g_error_free(error);
 	}
@@ -131,7 +138,7 @@ init(const struct mpdcron_config *conf, GKeyFile *fd)
 	g_debug("Initializing");
 
 	/* Load configuration */
-	if (file_load(conf, fd) < 0)
+	if (!file_load(conf, fd))
 		return MPDCRON_INIT_FAILURE;
 
 	/* Initialize database */
@@ -196,11 +203,16 @@ event_player(G_GNUC_UNUSED const struct mpd_connection *conn,
 	}
 
 	/* Submit the previous song */
-	if (prev != NULL && (song == NULL || mpd_song_get_id(prev) != mpd_song_get_id(song)))
+	if (prev != NULL &&
+	    (song == NULL || mpd_song_get_id(prev) != mpd_song_get_id(song) ||
+	     (is_remote &&
+	      mpd_song_get_tag(song, MPD_TAG_TITLE, 0) != mpd_song_get_tag(prev, MPD_TAG_TITLE, 0))))
 		song_ended(prev);
 
 	if (song != NULL) {
-		if (mpd_song_get_id(song) != last_id) {
+		if (mpd_song_get_id(song) != last_id ||
+		    (is_remote && prev != NULL &&
+		     mpd_song_get_tag(song, MPD_TAG_TITLE, 0) != mpd_song_get_tag(prev, MPD_TAG_TITLE, 0))) {
 			/* New song. */
 			song_started(song);
 			last_id = mpd_song_get_id(song);

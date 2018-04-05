@@ -2,19 +2,31 @@ dnl vim: set sw=4 sts=4 ts=4 noet ft=config foldmethod=marker foldmarker={{{,}}}
 
 dnl {{{ program, version
 AC_PREREQ(2.59)
-AC_INIT([src/cron-main.c])
 
-VERSION_MAJOR=0
-VERSION_MINOR=3
-VERSION_FULL="$VERSION_MAJOR.$VERSION_MINOR"
-VERSION="$VERSION_FULL"
+m4_define([mpdcron_version_major],  [0])
+m4_define([mpdcron_version_minor],  [3])
+m4_define([mpdcron_version_full],   [mpdcron_version_major.mpdcron_version_minor])
+m4_define([mpdcron_version],        [mpdcron_version_full])
+
+AC_INIT([mpdcron], [mpdcron_version],
+		[https://github.com/alip/mpdcron/issues],
+		[mpdcron], [http://alip.github.com/mpdcron/])
+
+AC_CONFIG_SRCDIR([src/cron-main.c])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
+AM_INIT_AUTOMAKE([std-options foreign])
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
+VERSION_MAJOR=mpdcron_version_major
+VERSION_MINOR=mpdcron_version_minor
+VERSION_FULL=mpdcron_version_full
+VERSION=mpdcron_version
 
 AC_SUBST([VERSION_MAJOR])
 AC_SUBST([VERSION_MINOR])
 AC_SUBST([VERSION_FULL])
-
-AM_INIT_AUTOMAKE(mpdcron, [$VERSION_FULL])
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 dnl {{{ git revision
 AC_MSG_CHECKING([for git head])
@@ -55,7 +67,7 @@ dnl {{{ Check for libraries
 GLIB_REQUIRED=2.16
 GIO_REQUIRED=2.22
 LIBDAEMON_REQUIRED=0.12
-LIBMPDCLIENT_REQUIRED=2.1
+LIBMPDCLIENT_REQUIRED=2.2
 
 PKG_CHECK_MODULES([glib], [glib-2.0 >= $GLIB_REQUIRED],,
 				  [AC_MSG_ERROR([mpdcron requires glib-$GLIB_REQUIRED or newer])])
@@ -103,7 +115,7 @@ WANT_STATS=no
 for m in $STANDARD_MODULES ; do
 	if test x"$m" = x"notification" ; then
 		if test x"$WANT_GMODULE" != x"yes"; then
-			AC_MSG_WARN([GModule support is disabled, notification module won't be built])
+			AC_MSG_WARN([GModule support is disabled, notification module will not be built])
 		else
 			# Notification requires notify-send
 			AC_CHECK_PROGS(NOTIFY_SEND, notify-send, )
@@ -116,7 +128,7 @@ for m in $STANDARD_MODULES ; do
 	fi
 	if test x"$m" = x"scrobbler" ; then
 		if test x"$WANT_GMODULE" != x"yes"; then
-			AC_MSG_WARN([GModule support is disabled, scrobbler module won't be built])
+			AC_MSG_WARN([GModule support is disabled, scrobbler module will not be built])
 		else
 			# Scrobbler requires curl.
 			PKG_CHECK_MODULES([libcurl], [libcurl], [WANT_SCROBBLER=yes],
@@ -125,7 +137,7 @@ for m in $STANDARD_MODULES ; do
 	fi
 	if test x"$m" = x"stats" ; then
 		if test x"$WANT_GMODULE" != x"yes"; then
-			AC_MSG_WARN([GModule support is disabled, stats module won't be built])
+			AC_MSG_WARN([GModule support is disabled, stats module will not be built])
 		else
 			# Stats module requires gio and sqlite3
 			PKG_CHECK_MODULES([sqlite], [sqlite3], [WANT_STATS=yes],
@@ -140,6 +152,8 @@ for m in $STANDARD_MODULES ; do
 			else
 				AC_DEFINE(HAVE_GIO_UNIX, 1, "Define for gio-unix")
 			fi
+			MPDCRON_CFLAGS="$MPDCRON_CFLAGS -D_XOPEN_SOURCE=600"
+			AC_CHECK_FUNCS(gmtime mktime strftime strptime getenv setenv)
 		fi
 	fi
 done
@@ -150,7 +164,6 @@ AM_CONDITIONAL([HAVE_GIO_UNIX], test x"$HAVE_GIO_UNIX" = x"yes")
 dnl }}}
 
 dnl {{{ Extra CFLAGS
-MPDCRON_CFLAGS=
 WANTED_CFLAGS="-Wall -W -Wextra -Wvla -Wformat=2 -Wformat-security -Wformat-nonliteral -Winit-self -Wfloat-equal -Wno-deprecated-declarations -Wmissing-declarations -Wmissing-noreturn -Wmissing-prototypes -Wredundant-decls  -Wshadow -Wpointer-arith -Wstrict-prototypes -Wcast-qual -Wwrite-strings -pedantic"
 for flag in $WANTED_CFLAGS ; do
 	AX_CHECK_COMPILER_FLAGS([$flag], [MPDCRON_CFLAGS="$MPDCRON_CFLAGS $flag"],)
@@ -159,16 +172,17 @@ AC_SUBST([MPDCRON_CFLAGS])
 dnl }}}
 
 dnl {{{ Output
-AM_CONFIG_HEADER(config.h)
-AC_OUTPUT(
-		  Makefile
-		  src/Makefile
-		  src/gmodule/Makefile
-		  src/gmodule/notification/Makefile
-		  src/gmodule/scrobbler/Makefile
-		  src/gmodule/stats/Makefile
-		  src/gmodule/stats/homescrape
-		  data/Makefile
-		  zsh-completion/Makefile
-)
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([
+				 Makefile
+				 src/Makefile
+				 src/gmodule/Makefile
+				 src/gmodule/notification/Makefile
+				 src/gmodule/scrobbler/Makefile
+				 src/gmodule/stats/Makefile
+				 src/gmodule/stats/homescrape
+				 data/Makefile
+				 zsh-completion/Makefile
+])
+AC_OUTPUT
 dnl }}}
