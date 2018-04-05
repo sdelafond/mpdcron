@@ -18,6 +18,7 @@ override_dh_auto_clean:
 
 override_dh_install:
 	find $(CURDIR)/debian/mpdcron/ -name *.la -exec rm {} \;
+	find $(CURDIR)/debian/mpdcron/ -name *.a -exec rm {} \;
 
 override_dh_auto_configure:
 	./autogen.sh
