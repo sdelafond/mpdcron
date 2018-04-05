@@ -5,8 +5,8 @@ Maintainer: Sebastien Delafond <seb@debian.org>
 Build-Depends: lintian, debhelper (>= 9~), libmpdclient-dev (>= 2.1), libdaemon-dev, libglib2.0-dev, libcurl4-gnutls-dev, libsqlite3-dev, libnotify-bin, quilt, automake, libtool
 Standards-Version: 3.9.5
 Homepage: http://alip.github.com/mpdcron
-Vcs-Git: git://anonscm.debian.org/collab-maint/mpdcron.git
-Vcs-Browser: http://anonscm.debian.org/git/collab-maint/mpdcron.git
+Vcs-Git: https://salsa.debian.org/debian/mpdcron.git
+Vcs-Browser: https://salsa.debian.org/debian/mpdcron
 
 Package: mpdcron
 Architecture: any
