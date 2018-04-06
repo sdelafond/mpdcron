@@ -1,3 +1,9 @@
+mpdcron (0.3+git20161228-3) unstable; urgency=medium
+
+  * Update debian/watch
+
+ -- Sebastien Delafond <seb@debian.org>  Fri, 06 Apr 2018 15:12:37 +0200
+
 mpdcron (0.3+git20161228-2) unstable; urgency=medium
 
   * Correct debian/watch URL
